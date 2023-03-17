@@ -92,25 +92,18 @@ int valY;
 int prevValX;
 int prevValY;
 
-
-float temp = 0.0;
-float altitude = 0.0;
-
-
+float tempMPU = 0;
 
 /*---------------BMP-180 VARIABLES-----------------*/
 
 Adafruit_BMP085 bmp; // Defining object for BMP-180
 float pressure = 0;
-
+float temp = 0.0;
+float altitude = 0.0;
 /*--------------BLUETOOTH PINS & VARIABLES--------------------*/
 
 SoftwareSerial B(2,3); //Pin 2 Rx and Pin 3 Tx
-unsigned long previousMillis = 0;
-const long interval = 120000; // 2 minutes in milliseconds
-const long bluetoothInterval = 20000; // 20 seconds in milliseconds
-unsigned long currentMillis = millis();
-
+unsigned long startTime;
 
 /*-----------ELECTRIC VARIABLE-------*/
 
@@ -302,12 +295,12 @@ void levelflight()
  valY = map(ay, -17000, 17000, 0, 179);
   
 
+  
+    //This code is to find temperature of MPU6050
+    //Good for Condition Monitoring
+    //tempMPU = mpu.getTemperature(); // Getting the temp of silicon die
+    //tempMPU = float(tempMPU + 521)/340 + 35.0;
   /*
-    This code is to find temperature of MPU6050
-    Good for Condition Monitoring
-    float temp = mpu.getTemperature(); // Getting the temp of silicon die
-    temp = float(temp + 521)/340 + 35.0;
-
     Serial.print(" Temp = ");
     Serial.print(temp);
     Serial.println(" *C");
@@ -424,11 +417,11 @@ void ACircuit()
   // Transfering to global variable
   filter_veloc = _sampleAvg;
 
-
+  delay(10);
   
   /*******************************************************/
    //Testing code in Excel streamer 
-  /*
+  
     //Testing Filter 
     Serial.print("Raw,");
     Serial.print(unfilter_veloc);
@@ -436,12 +429,12 @@ void ACircuit()
     Serial.print("Processed");
     Serial.print(",");
     Serial.println(filter_veloc);
-  */
+  
   /*****************************************************/
 
 
   // Tells when the relays to close or open
-  if(filter_veloc < 2.0 )
+  if(filter_veloc < 9.0 )
   {
     digitalWrite(relay_1, HIGH); //4 pin
     digitalWrite(relay_2, LOW);  //7 pin
@@ -450,7 +443,8 @@ void ACircuit()
 
   }
 
-  if(filter_veloc >= 6.5)
+
+  if(filter_veloc >= 10.0)
   {
     digitalWrite(relay_1, LOW);
     digitalWrite(relay_2, HIGH);
@@ -512,29 +506,103 @@ void electric()
 }
 
 
+/************ SCADA Sends Bluetooth data ***********/
+
+void SCADA()
+{
+
+  unsigned long stopTime = millis() + 10;
+
+  while(millis()<stopTime)  
+  {
+
+        B.print(unfilter_veloc);
+        B.print(",");
+        B.println(filter_veloc);
+        B.print(",");
+        B.print(altitude);
+        B.print(",");
+        B.print(temp);
+        B.print(",");
+        B.print(loadvoltage);
+        B.print(";");
+
+
+}
+                                      
+
+
+  startTime = millis();
+
+
+}
+
+
+
+
+
+
+
+
+
+
+
+bool isSCADA_RUNNING()
+{
+
+   unsigned long currentTime = millis();
+  return (currentTime >= startTime && currentTime < startTime + 10000);
+  
+}
+
+
+
+
+
+
 
 
 void loop()
 {
 
 
-    // Code works just not outputting
-    if (currentMillis - previousMillis >= interval) 
+    //Serial.println ("I'm here in the function");
+
+      alt();
+      levelflight();
+      ACircuit();
+      electric();
+
+  if (millis()-startTime >=10000)
+  {   
+    //Serial.println ("I'm here in the function2");   
+    SCADA();
+
+  }
+
+    if(!isSCADA_RUNNING())
     {
-        previousMillis = currentMillis;
+      //Serial.println ("I'm here in the function3");
+     
+    }
+
+
+
+
+   
+}  
+     
+
+
+
+    
+      
+    /*
         B.println(filter_veloc);
         B.print(",");
         B.print(altitude);
         B.print(",");
         B.print(loadvoltage);
         B.print(";");
-        delay(bluetoothInterval);
-    }
-
-
-    alt();
-    levelflight();
-    ACircuit();
-    electric();
- 
-}
+    */
+      

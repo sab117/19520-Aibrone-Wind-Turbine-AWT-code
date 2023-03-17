@@ -398,7 +398,7 @@ void ACircuit()
   
   /*******************************************************/
    //Testing code in excel streamer 
-/*
+
     //Testing Filter 
   Serial.print("Raw,");
   Serial.print(unfilter_veloc);
@@ -407,7 +407,7 @@ void ACircuit()
   Serial.print(",");
   Serial.println(filter_veloc);
   
-*/
+
   /*****************************************************/
 
 
@@ -502,10 +502,10 @@ void alt ()
 
 void loop()
 {
- alt();
- FC();
+ //alt();
+ //FC();
  //delay(100);
- //ACircuit();
+ ACircuit();
  //delay(100);
  //electric();
  
