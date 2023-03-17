@@ -1,1 +1,7 @@
-Add READ ME FILE
+By Saboor Rashid and Qmar Ilyas
+
+1.0 Anemometry_Code - Contains the code that allows the arduino to detect windspeed and then open relays when windspeeds to low or too high
+
+2.0 Anamometry_and_Electric_Code - Same code as above for anamomtry but includes the INA219 sensor for measuring voltage and current across SuperCaps
+
+
